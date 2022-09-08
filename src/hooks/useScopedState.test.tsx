@@ -7,7 +7,7 @@ import {
 } from "@testing-library/react";
 import { createScope } from "../scope/Scope";
 import { useScopedState } from "./useScopedState";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { StoreProvider } from "../components/StoreProvider";
 
 describe("When StoreProvider is missing", () => {
@@ -236,5 +236,57 @@ describe("When there are multiple calls to set state (using the function updater
 });
 
 describe("When changing the scope", () => {
-  it("Subscribes to the new scope", () => {});
+  const setup = () => {
+    const initialScope = createScope({
+      initialValue: "Yada",
+    });
+
+    const Component = () => {
+      const [scope, setScope] = useState(initialScope);
+      const [state, setState] = useScopedState(scope);
+
+      const updateScope = () => {
+        const newScope = createScope({
+          initialValue: "Duba",
+        });
+
+        setScope(newScope);
+      };
+
+      return (
+        <>
+          <input
+            data-testid="input"
+            value={state}
+            onChange={(event) => setState(event.target.value)}
+          />
+          <button data-testid="button" onClick={updateScope}>
+            Update
+          </button>
+        </>
+      );
+    };
+
+    render(
+      <StoreProvider>
+        <Component />
+      </StoreProvider>
+    );
+
+    const getInput = () => screen.getByTestId("input");
+    const getButton = () => screen.getByTestId("button");
+
+    fireEvent.click(getButton());
+
+    return {
+      getInput,
+      getButton,
+    };
+  };
+
+  it("Subscribes to the new scope", () => {
+    const { getInput } = setup();
+
+    expect(getInput()).toHaveValue("Duba");
+  });
 });
