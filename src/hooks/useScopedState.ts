@@ -1,14 +1,10 @@
-import { useContext, useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Scope } from "../scope/Scope";
-import { StoreContext } from "../components/StoreProvider";
-import { Store } from "../store/Store";
-import { userError } from "../errors/userError";
 import { updatedValueFromUpdater } from "../utils/updater";
+import { useStore } from "./useStore";
 
 export const useScopedState = <T>(scope: Scope<T>) => {
-  const store = useContext(StoreContext);
-
-  storeProviderExists(store);
+  const store = useStore();
 
   // Used to force rendering
   const [, set] = useState({});
@@ -65,12 +61,4 @@ export const useScopedState = <T>(scope: Scope<T>) => {
   );
 
   return [state, setState] as const;
-};
-
-const storeProviderExists: (
-  store: Store | undefined
-) => asserts store is Store = (store) => {
-  if (store === undefined) {
-    userError("StoreProvider missing!");
-  }
 };
